@@ -53,6 +53,18 @@ class CommandParserTest extends FunSuite with Matchers {
     }
   }
 
+  test("cdParsing") {
+    parseCommand("cd") should be (Cd(None))
+    parseCommand("cd a") should be (Cd(Some("a")))
+    parseCommand("cd /a") should be (Cd(Some("/a")))
+  }
+
+  test("lsParsing") {
+    parseCommand("ls") should be (Ls(None))
+    parseCommand("ls a") should be (Ls(Some("a")))
+    parseCommand("ls /a") should be (Ls(Some("/a")))
+  }
+
   test("Process parsing") {
     parseCommand("Process wc") should be (ExternalCommand("wc" :: Nil))
 

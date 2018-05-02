@@ -1,6 +1,8 @@
 package ru.spbau.maxim
 
-import java.io.{File, PrintWriter}
+import java.io.{PrintWriter}
+import java.nio.file.{Files, Path, Paths}
+import java.util.stream.Collectors
 
 import ru.spbau.maxim.Parser.Command.StringArgs
 import ru.spbau.maxim.Parser._
@@ -12,6 +14,11 @@ import scala.io.Source
  */
 class Evaluator {
   private var continue = true
+  private var currentDir: Path = Paths.get("").toAbsolutePath
+
+  def createPath(file: String): Path = currentDir.resolve(file).normalize()
+
+  def createFolder(dir: String): Path = if (dir.startsWith("/")) Paths.get(dir) else createPath(dir)
 
   /** Evaluates command
     */
@@ -19,14 +26,14 @@ class Evaluator {
     def inputTexts(files: StringArgs): Seq[String] = {
       files match {
         case Nil => stdIn :: Nil
-        case _ => files.map { file => Source.fromFile(file).getLines().mkString("\n") }
+        case _ => files.map { file => Source.fromFile(createPath(file).toString).getLines().mkString("\n") }
       }
     }
 
     command match {
       case echo: Echo => echo.args.mkString(" ")
 
-      case Pwd => new File(".").getCanonicalPath
+      case Pwd => currentDir.toString
 
       case Wc(args) => inputTexts(args).map { text =>
         val lines = text.split("\n").length
@@ -43,6 +50,23 @@ class Evaluator {
       case Assignment(name, str) =>
         Model.putEnv(name, str)
         ""
+
+      case Cd(dir) =>
+        currentDir = dir match {
+          case Some(value) => createPath(value).toAbsolutePath
+          case None => currentDir
+        }
+        ""
+
+      case Ls(dir) =>
+        val dir_ = dir match {
+          case Some(value) => createPath(value)
+          case None => currentDir
+        }
+        Files.walk(dir_, 1)
+          .filter(p => !p.equals(dir_))
+          .map[String](p => p.getFileName.toString)
+          .collect(Collectors.joining("\n"))
 
       case ExternalCommand(tokens) =>
         import scala.sys.process._

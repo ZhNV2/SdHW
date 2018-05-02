@@ -22,7 +22,12 @@ case class Cat(files: StringArgs) extends Command
 
 case class Assignment(variable: String, value: String) extends Command
 
+case class Cd(dir: Option[String]) extends Command
+
+case class Ls(dir: Option[String]) extends Command
+
 case class ExternalCommand(tokens: StringArgs) extends Command
+
 
 object Command {
   type StringArgs = Seq[String]
