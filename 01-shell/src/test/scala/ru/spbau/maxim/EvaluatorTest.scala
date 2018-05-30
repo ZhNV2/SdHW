@@ -37,6 +37,24 @@ class EvaluatorTest extends FunSuite with Matchers {
     evaluator.evaluatePipeline(s"wc ${tmpFile.path}") should be ("2 7 61")
   }
 
+  test("lsTest") {
+    val tmpDir = Path(System.getProperty("java.io.tmpdir"))
+    val fileName = "file.txt"
+    val tmpFile = tmpDir.resolve(fileName)
+    tmpFile.createFile()
+
+    val evaluator = new Evaluator
+    val files = evaluator.evaluatePipeline(s"ls ${tmpDir.toAbsolute.path}").split("\n")
+    files should contain (fileName)
+  }
+
+  test("cdTest") {
+    val tmpDir = Path(System.getProperty("java.io.tmpdir"))
+    val evaluator = new Evaluator
+    evaluator.evaluatePipeline(s"cd ${tmpDir.toAbsolute.path}") should be ("")
+    evaluator.evaluatePipeline(s"pwd") should be (tmpDir.toAbsolute.path)
+  }
+
   test("assignTest") {
     val evaluator = new Evaluator
 

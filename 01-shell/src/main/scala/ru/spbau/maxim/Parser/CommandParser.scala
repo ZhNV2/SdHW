@@ -10,7 +10,7 @@ class CommandParser extends JavaTokenParsers {
 
   /** Parser for all commands
     */
-  def command: Parser[Command] = assignment | echo | wc | cat | pwd | exit | externalCommand
+  def command: Parser[Command] = assignment | echo | wc | cat | pwd | exit | cd | ls | externalCommand
 
   private def echo: Parser[Echo] = "echo" ~> stringArgs ^^ { args => Echo(args) }
 
@@ -21,6 +21,10 @@ class CommandParser extends JavaTokenParsers {
   private def pwd: Parser[Pwd.type] = ("pwd" <~ emptyInput) ^^ { _ => Pwd }
 
   private def exit: Parser[Exit.type] = "exit" ^^ { _ => Exit }
+
+  private def cd: Parser[Cd] = "cd" ~> opt(token) <~ emptyInput ^^ (dir => Cd(dir))
+
+  private def ls: Parser[Ls] = "ls" ~> opt(token) <~ emptyInput ^^ (dir => Ls(dir))
 
   private def assignment: Parser[Assignment] = (variableName <~ "=") ~ token <~ emptyInput ^^ {
     case variable ~ str => Assignment(variable, str)
