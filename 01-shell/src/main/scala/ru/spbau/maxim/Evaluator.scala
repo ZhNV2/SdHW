@@ -18,8 +18,6 @@ class Evaluator {
 
   def createPath(file: String): Path = currentDir.resolve(file).normalize()
 
-  def createFolder(dir: String): Path = if (dir.startsWith("/")) Paths.get(dir) else createPath(dir)
-
   /** Evaluates command
     */
   def evaluate(command: Command, stdIn: String): String = {
@@ -52,8 +50,15 @@ class Evaluator {
         ""
 
       case Cd(dir) =>
+        def tryCd(value: String): Path = {
+          val newPath = createPath(value).toAbsolutePath
+          if (!Files.exists(newPath)) {
+            throw new IllegalArgumentException("provided dir does not exist")
+          }
+          newPath
+        }
         currentDir = dir match {
-          case Some(value) => createPath(value).toAbsolutePath
+          case Some(value) => tryCd(value)
           case None => currentDir
         }
         ""
